@@ -9,8 +9,5 @@ import { AuthenticationMiddleware } from './middleware/authentication.middleware
   controllers: [AuthController],
   providers: [AuthService]
 })
-export class AuthModule  implements NestModule{
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthenticationMiddleware).forRoutes('*');  
-  }
-}
+export class AuthModule {}
+
