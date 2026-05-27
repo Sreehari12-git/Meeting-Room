@@ -13,7 +13,6 @@ export class AuthService {
                 email
             }
         })
-
         if(!user) {
             throw new UnauthorizedException("Invalid credentials");
         }
@@ -32,7 +31,6 @@ export class AuthService {
                 expiresIn: "10d"
             }
         )
-
         return {
             message: "Login success",
             token
