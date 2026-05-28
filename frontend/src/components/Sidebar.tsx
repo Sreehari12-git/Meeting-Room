@@ -1,8 +1,14 @@
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 
 const Sidebar = () => {
   const baseClass = "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-colors duration-150";
   const activeClass = "bg-gray-800 text-white";
+
+  const navigate = useNavigate();
+
+  const logout = () => {
+    navigate("/");
+  }
 
   return (
     <div className="h-screen w-60 bg-gray-900 border-r border-gray-800 flex flex-col px-4 py-6">
@@ -48,7 +54,8 @@ const Sidebar = () => {
       </nav>
 
       <div className="mt-auto pt-4 border-t border-gray-800">
-        <button className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-colors duration-150 cursor-pointer">
+        <button className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-colors duration-150 cursor-pointer"
+            onClick={logout}>
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" strokeLinecap="round" strokeLinejoin="round" />
             <polyline points="16 17 21 12 16 7" strokeLinecap="round" strokeLinejoin="round" />
