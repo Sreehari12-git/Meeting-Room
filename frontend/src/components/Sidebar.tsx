@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom"
+import { logoutUser } from "../api/authApi";
 
 const Sidebar = () => {
   const baseClass = "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-colors duration-150";
@@ -6,8 +7,14 @@ const Sidebar = () => {
 
   const navigate = useNavigate();
 
-  const logout = () => {
-    navigate("/");
+  const logout = async() => {
+    try {
+        await logoutUser();
+        navigate("/");
+    }
+    catch(error) {
+        console.log(error);
+    }
   }
 
   return (
