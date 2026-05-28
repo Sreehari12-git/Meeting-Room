@@ -2,15 +2,22 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import './App.css'
 import Login from './pages/Login'
-import AdimDashboard from './pages/AdimDashboard'
+import AdimDashboard from './pages/Admin/AdimDashboard'
+import MeetingRoom from './pages/Admin/MeetingRoom'
+import { AdminLayout } from './layout/AdminLayout'
+import AddUser from './pages/Admin/AddUser'
 
 function App() {
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<Login/>} />
-        <Route path='/admin' element={<AdimDashboard/>}/>
+        <Route path='/' element={<Login/>}/>
+        <Route element={<AdminLayout/>}>
+          <Route path='/admin' element={<AdimDashboard/>}/>
+          <Route path='/room' element={<MeetingRoom/>}/>
+          <Route path='/user' element={<AddUser/>}/>
+        </Route>
       </Routes>
     </BrowserRouter>
   )
