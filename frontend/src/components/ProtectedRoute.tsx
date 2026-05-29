@@ -1,14 +1,19 @@
 import Cookies from "js-cookie"
-import { Navigate, Outlet } from "react-router-dom";
+import type { ReactNode } from "react";
+import { Navigate } from "react-router-dom";
+
+    type Props = {
+        children: ReactNode;
+    };
 
 
-export const ProtectedRoute = () => {
+export const ProtectedRoute = ({children} : Props) => {
     const token = Cookies.get("token");
-
+    
     if(!token) {
         return <Navigate to="/" replace/>
     }
 
-    return <Outlet/>
+    return children
 }
 

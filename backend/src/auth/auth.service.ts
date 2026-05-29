@@ -25,15 +25,31 @@ export class AuthService {
 
         const token = jwt.sign(
             {
-                id: user.id
+                id: user.id,
+                role:user.role
             },
             process.env.JWT_SECRET as string, {
-                expiresIn: "10d"
+                expiresIn: "2h"
             }
         )
+
+        const refreshToken = jwt.sign(
+            {
+                id: user.id
+            },
+            process.env.JWT_REFRESH_SECRET as string, {
+                expiresIn: "7d"
+            }
+        )
+
         return {
             message: "Login success",
-            token
+            token,
+            refreshToken,
+            user: {
+                id: user.id,
+                role: user.role
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
 
-function AdimDashboard() {
+function AdminDashboard() {
   return (
     <div>
       <h1>Admin</h1>
@@ -7,5 +7,5 @@ function AdimDashboard() {
   )
 }
 
-export default AdimDashboard
+export default AdminDashboard
 

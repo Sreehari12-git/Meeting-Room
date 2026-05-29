@@ -9,9 +9,8 @@ const Login = () => {
 
     const handleLogin = async () => {
         try {
-            const data = await loginUser(email, password);
-            console.log("Login success:", data);
-            navigate('/admin');
+            await loginUser(email, password);
+            navigate("/admin");
         } catch (error: any) {
             console.log(error);
             alert(error.response?.data?.message || "Login failed");
