@@ -7,12 +7,12 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @Post("createUser")
+  @Post("create-user")
   createUser(@Body() body: CreateUserDto) {
     return this.usersService.createUser(body);
   }
 
-  @Get("getAll")
+  @Get("get-all")
   getAllUser() {
     return this.usersService.getAllUsers();
   }
