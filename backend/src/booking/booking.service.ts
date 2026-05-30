@@ -53,6 +53,10 @@ export class BookingService {
             throw new NotFoundException("Room not found");
         }
 
+        if (new Date(dto.startTime) >= new Date(dto.endTime)) {
+            throw new BadRequestException("End time must be greater than start time");
+        }
+
         const existingBooking = await this.prisma.booking.findFirst({
             where: {
                 roomId: dto.roomId,
@@ -85,6 +89,11 @@ export class BookingService {
                 status: "UPCOMING"
             }
         })
+
+        return {
+            message: "Room booked successfully",
+            booking
+        };
     }
 
     async getUpcomingBookings(userId: number) {
