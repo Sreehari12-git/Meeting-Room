@@ -20,12 +20,12 @@ export class UsersController {
     return this.usersService.getAllUsers();
   }
 
-  @Delete("user/:email")
+  @Delete("user/:email") @Roles(Role.ADMIN)
   deleteUser(@Param("email") email: string) {
     return this.usersService.deleteUser(email);
   }
 
-  @Put("user/:email")
+  @Put("user/:email") @Roles(Role.ADMIN)
   updateUser(@Param("email") email: string,@Body() body: any) {
     return this.usersService.updateUser(
       email,
@@ -33,22 +33,22 @@ export class UsersController {
     );
   }
 
-  @Post("createRooms")
+  @Post("createRooms") @Roles(Role.ADMIN)
   createRoom(@Body() body: any) {
     return this.usersService.createRooms(body);
   }
 
-  @Get("getRooms")
+  @Get("getRooms") @Roles(Role.ADMIN)
   getAllRooms() {
     return this.usersService.getRooms();
   }
 
-  @Delete("room/:name")
+  @Delete("room/:name") @Roles(Role.ADMIN)
   deleteRoom(@Param("name") name : string) {
     return this.usersService.deleteRooms(name);
   }
 
-  @Put("room/:name")
+  @Put("room/:name") @Roles(Role.ADMIN)
   updateRoom(@Param("name") name: string,@Body() body: any) {
     return this.usersService.updateRooms(
       name,
