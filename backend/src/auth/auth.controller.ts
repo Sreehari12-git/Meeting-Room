@@ -15,13 +15,13 @@ export class AuthController {
             body.password
         );
         res.cookie("token", result.token, {
-            httpOnly: false,
+            httpOnly: true,
             secure: false,
             maxAge: 2 * 60 * 60 * 1000
         })
 
         res.cookie("refreshtoken",result.refreshToken, {
-            httpOnly: false,
+            httpOnly: true,
             secure: false,
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
@@ -64,7 +64,7 @@ export class AuthController {
             );
 
             res.cookie("token", newAccessToken, {
-                httpOnly: false,
+                httpOnly: true,
                 secure: false,
                 maxAge: 2 * 60 * 60 * 1000
             });
@@ -77,5 +77,10 @@ export class AuthController {
             throw new UnauthorizedException("Invalid refresh token");
         }
     }   
+
+    @Get('me')
+    getMe(@Req() req: Request) {
+        return req["user"];
+    }
 }
 

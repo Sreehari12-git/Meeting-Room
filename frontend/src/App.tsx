@@ -7,17 +7,17 @@ import MeetingRoom from './pages/Admin/MeetingRoom'
 import { AdminLayout } from './layout/AdminLayout'
 import AddUser from './pages/Admin/AddUser'
 import { ProtectedRoute } from './components/ProtectedRoute'
+// import { ProtectedRoute } from './components/ProtectedRoute'
 
 function App() {
-
   return (
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<Login/>}/>
         <Route element={<ProtectedRoute><AdminLayout/></ProtectedRoute>}>
           <Route path='/admin' element={<AdimDashboard/>}/>
-          <Route path='/room' element={<MeetingRoom/>}/>
-          <Route path='/user' element={<AddUser/>}/>
+          <Route path='/create-room' element={<MeetingRoom/>}/>
+          <Route path='/create-user' element={<AddUser/>}/>
         </Route>
       </Routes>
     </BrowserRouter>

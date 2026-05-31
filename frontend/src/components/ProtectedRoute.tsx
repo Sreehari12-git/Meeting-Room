@@ -1,19 +1,37 @@
-import Cookies from "js-cookie"
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Navigate } from "react-router-dom";
+import { getCurrentUser } from "../api/authApi";
 
     type Props = {
         children: ReactNode;
     };
 
+    export const ProtectedRoute = ({children} : Props) => {
+        const [authenticated,setAuthenticated] = useState(false);
+        const [loading, setLoading] = useState(true);
+        useEffect(() => {
+            const fetchUser =  async() => {
+                try{
+                    await getCurrentUser();
+                    setAuthenticated(true);
+                }
+                catch {
+                    setAuthenticated(false);
+                } finally {
+                    setLoading(false);
+                }
+            }
+            fetchUser();
+        },[])
 
-export const ProtectedRoute = ({children} : Props) => {
-    const token = Cookies.get("token");
+        if (loading) {
+            return <div>Loading...</div>;
+        }
     
-    if(!token) {
-        return <Navigate to="/" replace/>
-    }
+        if(!authenticated) {
+            return <Navigate to="/" replace/>
+        }
 
-    return children
+        return children
 }
 
