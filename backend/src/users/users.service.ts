@@ -120,7 +120,9 @@ export class UsersService {
             select: {
                 id: true,
                 name: true,
-                status: true
+                status: true,
+                capacity: true,
+                Amenities: true
             }
         })
         return room;
