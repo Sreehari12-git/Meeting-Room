@@ -38,7 +38,7 @@ export class UsersController {
     return this.usersService.createRooms(body);
   }
 
-  @Get("getRooms") @Roles(Role.ADMIN)
+  @Get("get-rooms") @Roles(Role.ADMIN)
   getAllRooms() {
     return this.usersService.getRooms();
   }

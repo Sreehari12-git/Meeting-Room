@@ -165,12 +165,14 @@ export class UsersService {
             },
             data: {
                 name: data.name,
-                status: data.status
+                status: data.status,
+                capacity: data.capacity,
+                Amenities: data.amenities
             }
         })
 
         return {
-            message: "Room updated successfully"
+            message: "Room updated successfully",updateRoom
         }
     }
 }
