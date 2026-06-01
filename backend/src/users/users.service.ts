@@ -103,7 +103,9 @@ export class UsersService {
         const room = await this.prisma.room.create({
             data: {
                 name: data.name,
-                status: data.status?? "AVAILABLE"
+                status: data.status?? "AVAILABLE",
+                capacity: data.capacity,
+                Amenities: data.amenities
             }
         })
 

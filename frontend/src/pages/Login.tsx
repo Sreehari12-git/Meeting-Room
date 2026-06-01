@@ -9,8 +9,13 @@ const Login = () => {
 
     const handleLogin = async () => {
         try {
-            await loginUser(email, password);
-            navigate("/admin");
+            const data = await loginUser(email, password);
+            if(data.user.role === "ADMIN") {
+                navigate('/create-room')
+            } else {
+                navigate("/check-availability");
+            }
+
         } catch (error: any) {
             console.log(error);
             alert(error.response?.data?.message || "Login failed");

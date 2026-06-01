@@ -33,7 +33,7 @@ export class UsersController {
     );
   }
 
-  @Post("createRooms") @Roles(Role.ADMIN)
+  @Post("create-rooms") @Roles(Role.ADMIN)
   createRoom(@Body() body: any) {
     return this.usersService.createRooms(body);
   }

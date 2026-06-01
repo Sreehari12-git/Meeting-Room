@@ -122,7 +122,6 @@ function AddUser() {
                 />
               </div>
 
-              {/* Role */}
               <div className="space-y-1.5">
                 <label className="text-[#7d8590] text-[11px] font-semibold tracking-widest uppercase">Role</label>
                 <select
@@ -137,10 +136,7 @@ function AddUser() {
               </div>
             </div>
 
-            {/* Divider */}
             <div className="border-t border-[#21262d] my-6" />
-
-            {/* Actions */}
             <div className="flex items-center gap-3">
               <button
                 onClick={addUser}
