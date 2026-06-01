@@ -1,9 +1,9 @@
 
 function BookRoom() {
   return (
-    <>
-      <h1>Book room</h1>
-    </>
+    <div>
+      <h1>Hi</h1>
+    </div>
   )
 }
 
