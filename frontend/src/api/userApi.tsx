@@ -18,7 +18,7 @@ export const createUser = async(name:string,password:string,email:string,role:st
 
 export const deleteUser = async(email:string) => {
     try {
-            const response = await api.delete(`/admin/user/:${email}`);
+            const response = await api.delete(`/admin/user/${email}`);
             return response;
         }
     catch(error) {
@@ -38,4 +38,14 @@ export const getAllUsers = async() => {
     }
 }
 
+export const updateUser = async(email:string, data: any) => {
+    try {
+        const response = await api.put(`admin/user/${email}`, data)
+        return response;
+    }
+    catch(error) {
+        console.log(error);
+        throw error;
+    }
+}
 

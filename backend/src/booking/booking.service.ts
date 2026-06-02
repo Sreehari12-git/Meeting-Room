@@ -113,7 +113,7 @@ export class BookingService {
             where: {
                 userId,
                 status: {
-                    in: ["COMPLETED", "CANCELED"],
+                    in: ["COMPLETED","UPCOMING" ,"CANCELED"],
                 },
             },
             include: {
