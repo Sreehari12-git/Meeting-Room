@@ -63,5 +63,6 @@ enum BookingStatus {
   UPCOMING
   CANCELED
   COMPLETED
+  ONGOING
 }
 
