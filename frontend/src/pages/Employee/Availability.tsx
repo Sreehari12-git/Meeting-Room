@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { checkAvailability, bookRoom } from "../../api/bookingApi"
+import { checkAvailability} from "../../api/bookingApi"
 import { useNavigate } from "react-router-dom"
 
 function Availability() {
@@ -20,16 +20,6 @@ function Availability() {
       const combinedEnd = combineDateTime(date, endTime)
       const data = await checkAvailability(combinedStart, combinedEnd)
       setRooms(data)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const bookRoomHandler = async (roomId: number) => {
-    try {
-      const combinedStart = combineDateTime(date, startTime)
-      const combinedEnd = combineDateTime(date, endTime)
-      await bookRoom(roomId, combinedStart, combinedEnd)
     } catch (error) {
       console.log(error)
     }
@@ -84,3 +74,4 @@ function Availability() {
 }
 
 export default Availability
+
