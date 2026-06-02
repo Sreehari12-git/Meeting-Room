@@ -1,8 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { RoomStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { checkAvailabilityDto } from './dto/check-availability.dto';
 import { BookRoomDto } from './dto/book-room.dto';
+import { BookingStatus } from '@prisma/client';
 
 @Injectable()
 export class BookingService {
@@ -113,7 +113,12 @@ export class BookingService {
             where: {
                 userId,
                 status: {
-                    in: ["COMPLETED","UPCOMING" ,"CANCELED", "ONGOING"],
+                    in: [
+                        BookingStatus.COMPLETED,
+                        BookingStatus.CANCELED,
+                        BookingStatus.UPCOMING,
+                        BookingStatus.ONGOING
+                    ],
                 },
             },
             include: {

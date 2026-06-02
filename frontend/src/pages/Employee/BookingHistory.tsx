@@ -5,9 +5,10 @@ function BookingHistory() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [cancellingId,setCancellingId] = useState<number | null>(null);
-  const[cancelError,setCancelError] = useState("");
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [cancelError, setCancelError] = useState("");
 
+  // Fetch bookings
   const fetchBookingHistory = async () => {
     setLoading(true);
     try {
@@ -25,31 +26,64 @@ function BookingHistory() {
     fetchBookingHistory();
   }, []);
 
-  const handleCancel = async(bookingId: number) => {
+  const handleCancel = async (bookingId: number) => {
     setCancellingId(bookingId);
-    try{
+    try {
       await cancelBooking(bookingId);
-      setBookings(prev =>prev.map(booking => booking.id === bookingId ? { ...booking, status: "CANCELED" }: booking));
+      setBookings((prev) =>
+        prev.map((booking) =>
+          booking.id === bookingId
+            ? { ...booking, status: "CANCELED" }
+            : booking
+        )
+      );
+    } catch (error) {
+      setCancelError("Failed to cancel booking");
+    } finally {
+      setCancellingId(null);
     }
-    catch(error) {
-      setCancelError("Faield to cancel booking")
+  };
+
+  const getBookingStatus = (booking: any) => {
+    if (booking.status === "CANCELED") {
+      return "CANCELED";
     }
-    finally {
-      setCancellingId(null)
-    }
-  }
+
+    const now = new Date();
+    const start = new Date(booking.startTime);
+    const end = new Date(booking.endTime);
+
+    if (now < start) return "UPCOMING";
+
+    if (now >= start && now < end) return "ONGOING";
+
+    return "COMPLETED";
+  };
 
   const statusStyle: Record<string, string> = {
     UPCOMING: "bg-blue-100 text-blue-700",
+    ONGOING: "bg-yellow-100 text-yellow-700",
     COMPLETED: "bg-green-100 text-green-700",
     CANCELED: "bg-red-100 text-red-600",
   };
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBookings((prev) => [...prev]);
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 px-8 py-10">
       <div className="mb-8 border-b border-gray-200 pb-5">
-        <h1 className="text-2xl font-semibold text-gray-800">Booking History</h1>
-        <p className="text-sm text-gray-500 mt-1">Your past and upcoming room bookings</p>
+        <h1 className="text-2xl font-semibold text-gray-800">
+          Booking History
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Your past and upcoming room bookings
+        </p>
       </div>
 
       {loading && (
@@ -97,40 +131,73 @@ function BookingHistory() {
                 <th className="px-6 py-3">Action</th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-gray-100">
-              {bookings.map((booking) => (
-                <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-gray-800">
-                    {booking.room?.name || "—"}
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">
-                    {new Date(booking.startTime).toLocaleDateString([], { weekday: "long", day: "numeric", month: "short" })}
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">
-                    {new Date(booking.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">
-                    {new Date(booking.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusStyle[booking.status] || "bg-gray-100 text-gray-600"}`}>
-                      {booking.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                      {booking.status === "UPCOMING" ? (
-                        <button onClick={() => handleCancel(booking.id)} disabled={cancellingId === booking.id} className="px-3 py-1 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                          {cancellingId === booking.id ? "Cancelling..." : "Cancel"}
+              {bookings.map((booking) => {
+                const status = getBookingStatus(booking);
+
+                return (
+                  <tr
+                    key={booking.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-6 py-4 font-medium text-gray-800">
+                      {booking.room?.name || "—"}
+                    </td>
+
+                    <td className="px-6 py-4 text-gray-500">
+                      {new Date(booking.startTime).toLocaleDateString([], {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </td>
+
+                    <td className="px-6 py-4 text-gray-500">
+                      {new Date(booking.startTime).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </td>
+
+                    <td className="px-6 py-4 text-gray-500">
+                      {new Date(booking.endTime).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          statusStyle[status] ||
+                          "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {status}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      {status === "UPCOMING" ? (
+                        <button
+                          onClick={() => handleCancel(booking.id)}
+                          disabled={cancellingId === booking.id}
+                          className="px-3 py-1 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {cancellingId === booking.id
+                            ? "Cancelling..."
+                            : "Cancel"}
                         </button>
                       ) : null}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
-
     </div>
   );
 }
