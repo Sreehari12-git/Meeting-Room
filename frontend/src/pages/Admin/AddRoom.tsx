@@ -3,10 +3,20 @@ import { createRoom, deleteRoom, getRooms, updateRoom } from "../../api/roomApi"
 
 const AMENITY_OPTIONS = ["Projector", "Whiteboard", "TV Screen", "Video Conferencing", "Sound System", "Air Conditioning", "Microphone"]
 
+const AMENITY_ICONS: Record<string, string> = {
+  "Projector": "🎥",
+  "Whiteboard": "📋",
+  "TV Screen": "📺",
+  "Video Conferencing": "🎦",
+  "Sound System": "🔊",
+  "Air Conditioning": "❄️",
+  "Microphone": "🎤",
+}
+
 function AddRoom() {
   const [name, setName] = useState("")
   const [status, setStatus] = useState("AVAILABLE")
-  const [capacity, setCapacity] = useState(0)
+  const [capacity, setCapacity] = useState("")
   const [amenities, setAmenities] = useState<string[]>([])
   const[rooms,setRooms] = useState<any[]>([]);
   const[selectedRoom,setSelectedRoom] = useState<any>(null); 
@@ -25,12 +35,13 @@ function AddRoom() {
 
   const addRoom = async () => {
     try {
-      await createRoom(name, status, capacity, amenities)
+      const capacityNumber = Number(capacity);
+      await createRoom(name, status, capacityNumber, amenities)
       setMessage("Room added successfully!")
       setError(false);
       setName("");
       setStatus("");
-      setCapacity(0);
+      setCapacity("");
       setAmenities([]);
       setTimeout(() => setMessage(""),3000);
     } catch (error) {
@@ -75,154 +86,189 @@ function AddRoom() {
     }
   }
 
+  const statusConfig: Record<string, { label: string; className: string; dot: string }> = {
+    AVAILABLE:   { label: "Available",   className: "bg-green-50 text-green-800 border border-green-200",  dot: "bg-green-600" },
+    OCCUPIED:    { label: "Occupied",    className: "bg-red-50 text-red-800 border border-red-200",        dot: "bg-red-600"   },
+    MAINTANENCE: { label: "Maintenance", className: "bg-amber-50 text-amber-800 border border-amber-200",  dot: "bg-amber-600" },
+  }
+
+  const inputClass = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+  const labelClass = "flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5"
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-xl font-semibold text-gray-800 mb-6">Add Meeting Room</h1>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="e.g. Boardroom A"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Capacity</label>
-              <input
-                type="number"
-                value={capacity}
-                min={0}
-                onChange={e => setCapacity(Number(e.target.value))}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              <select
-                value={status}
-                onChange={e => setStatus(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+    <div className="min-h-screen bg-gray-50 px-8 py-10">
+      {selectedRoom && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-7 w-full max-w-md">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+              <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                <span className="text-gray-400">✏️</span> Edit room
+              </h2>
+              <button
+                onClick={() => setSelectedRoom(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50 transition text-sm"
               >
+                ✕
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div>
+                <label className={labelClass}>Room name</label>
+                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>Capacity</label>
+                <input type="number" value={editCapacity} onChange={e => setEditCapacity(Number(e.target.value))} className={inputClass} />
+              </div>
+            </div>
+            <div className="mb-4">
+              <label className={labelClass}>Status</label>
+              <select value={editStatus} onChange={e => setEditStatus(e.target.value)} className={inputClass + " cursor-pointer"}>
                 <option value="AVAILABLE">Available</option>
                 <option value="MAINTANENCE">Maintenance</option>
                 <option value="OCCUPIED">Occupied</option>
               </select>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Amenities</label>
-              <div className="flex flex-wrap gap-2">
+            <div className="mb-1">
+              <label className={labelClass}>Amenities</label>
+              <div className="flex flex-wrap gap-2 mt-1">
                 {AMENITY_OPTIONS.map(amenity => (
-                  <button
-                    key={amenity}
-                    type="button"
-                    onClick={() => toggleAmenity(amenity)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                      amenities.includes(amenity)
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-white text-gray-600 border-gray-300 hover:border-blue-400"
-                    }`}
-                  >
-                    {amenity}
+                  <button key={amenity} type="button"
+                    onClick={() => setEditAmenities(prev => prev.includes(amenity) ? prev.filter(a => a !== amenity) : [...prev, amenity])}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                      editAmenities.includes(amenity)
+                        ? "bg-blue-50 text-blue-700 border-blue-200"
+                        : "bg-white text-gray-500 border-gray-200 hover:border-blue-200 hover:text-blue-600"
+                    }`}>
+                    <span>{AMENITY_ICONS[amenity]}</span>{amenity}
                   </button>
                 ))}
               </div>
             </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={addRoom}
-            className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded px-4 py-2"
-          >
-            Add Room
-          </button>
-          {message && <p className={`${isError? "text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2 mt-4" : "text-sm text-green-600 bg-green-50 border border-green-200 rounded px-3 py-2 mt-4 "}`}>{message}</p>}
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">All Rooms</h2>
-          <div className="space-y-3">
-            {rooms.map((room:any) => (
-              <div key={room.id} className="border border-gray-200 rounded-lg p-4 flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-gray-800">{room.name}</p>
-                  {room.capacity ? <p className="text-xs text-gray-500">Capacity: {room.capacity}</p> : null}
-                  <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${
-                    room.status === "AVAILABLE" ? "bg-green-100 text-green-700" :
-                    room.status === "OCCUPIED" ? "bg-red-100 text-red-700" :
-                    "bg-yellow-100 text-yellow-700"
-                  }`}>{room.status}</span>
-                  {room.Amenities?.length > 0 && (
-                    <p className="text-xs text-gray-400">{room.Amenities?.join(", ")}</p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => delRoom(room.name)} className="text-xs text-red-600 border border-red-200 rounded px-3 py-1 hover:bg-red-50">Delete</button>
-                  <button onClick={() => {setSelectedRoom(room); setEditName(room.name); setEditCapacity(room.capacity); setEditStatus(room.status); setEditAmenities(room.Amenities)}} className="text-xs text-blue-600 border border-blue-200 rounded px-3 py-1 hover:bg-blue-50">Edit</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {selectedRoom && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold text-gray-800 mb-6">Edit Room</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input type="text" value={editName} onChange={e => setEditName(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Capacity</label>
-                <input type="number" value={editCapacity} onChange={e => setEditCapacity(Number(e.target.value))}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select value={editStatus} onChange={e => setEditStatus(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                  <option value="AVAILABLE">Available</option>
-                  <option value="MAINTANENCE">Maintenance</option>
-                  <option value="OCCUPIED">Occupied</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Amenities</label>
-                <div className="flex flex-wrap gap-2">
-                  {AMENITY_OPTIONS.map(amenity => (
-                    <button key={amenity} type="button"
-                      onClick={() => setEditAmenities(prev => prev.includes(amenity) ? prev.filter(a => a !== amenity) : [...prev, amenity])}
-                      className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                        editAmenities.includes(amenity) ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-600 border-gray-300 hover:border-blue-400"
-                      }`}>
-                      {amenity}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 mt-6 pt-5 border-t border-gray-100">
               <button onClick={() => setSelectedRoom(null)}
-                className="flex-1 border border-gray-300 text-gray-600 text-sm font-medium rounded px-4 py-2 hover:bg-gray-50">Cancel</button>
+                className="flex-1 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg px-4 py-2.5 hover:bg-gray-50 transition">
+                Cancel
+              </button>
               <button onClick={() => updRoom(selectedRoom.name, { name: editName, capacity: editCapacity, status: editStatus, amenities: editAmenities })}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded px-4 py-2">Update Room</button>
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg px-4 py-2.5 transition">
+                Update room
+              </button>
             </div>
           </div>
         </div>
       )}
+
+      <div className="mb-7 pb-5 border-b border-gray-200">
+        <h1 className="text-xl font-semibold text-gray-800">Add meeting room</h1>
+        <p className="text-sm text-gray-500 mt-1">Configure a new room and its available amenities</p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-200 p-7 max-w-xl shadow-sm mb-10">
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <label className={labelClass}>Room name</label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Boardroom A" className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Capacity</label>
+            <input type="number" value={capacity} onChange={e => setCapacity(e.target.value)} className={inputClass} />
+          </div>
+        </div>
+        <div className="mb-4">
+          <label className={labelClass}>Status</label>
+          <select value={status} onChange={e => setStatus(e.target.value)} className={inputClass + " cursor-pointer"}>
+            <option value="AVAILABLE">Available</option>
+            <option value="MAINTANENCE">Maintenance</option>
+            <option value="OCCUPIED">Occupied</option>
+          </select>
+        </div>
+        <div>
+          <label className={labelClass}>Amenities</label>
+          <div className="flex flex-wrap gap-2 mt-1">
+            {AMENITY_OPTIONS.map(amenity => (
+              <button key={amenity} type="button" onClick={() => toggleAmenity(amenity)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  amenities.includes(amenity)
+                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                    : "bg-white text-gray-500 border-gray-200 hover:border-blue-200 hover:text-blue-600"
+                }`}>
+                <span>{AMENITY_ICONS[amenity]}</span>{amenity}
+              </button>
+            ))}
+          </div>
+        </div>
+        <button type="button" onClick={addRoom}
+          className="mt-6 w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+          + Add room
+        </button>
+        {message && (
+          <div className={`flex items-center gap-2 mt-4 px-4 py-3 rounded-xl text-sm border ${
+            isError ? "bg-red-50 border-red-200 text-red-700" : "bg-green-50 border-green-200 text-green-700"
+          }`}>
+            {isError ? "⚠" : "✓"} {message}
+          </div>
+        )}
+      </div>
+
+      <div className="mb-6 pb-5 border-b border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-800">All rooms</h2>
+        <p className="text-sm text-gray-500 mt-1">Manage your meeting spaces</p>
+      </div>
+
+      {rooms.length === 0 && (
+        <div className="text-center py-20">
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4 text-xl">🏢</div>
+          <p className="text-sm font-medium text-gray-500">No rooms added yet</p>
+          <p className="text-xs text-gray-400 mt-1">Create your first room above</p>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-3 max-w-3xl">
+        {rooms.map((room: any) => {
+          const sc = statusConfig[room.status] ?? { label: room.status, className: "bg-gray-100 text-gray-600 border border-gray-200", dot: "bg-gray-400" }
+          return (
+            <div key={room.id} className="bg-white rounded-2xl border border-gray-200 p-4 flex items-start gap-4 hover:border-gray-300 transition-colors shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 text-lg">
+                🚪
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-800 mb-1.5">{room.name}</p>
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  {room.capacity ? (
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                      👥 {room.capacity} people
+                    </span>
+                  ) : null}
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${sc.className}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+                    {sc.label}
+                  </span>
+                </div>
+                {room.Amenities?.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {room.Amenities.map((a: string) => (
+                      <span key={a} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-gray-50 text-gray-500 border border-gray-100">
+                        {AMENITY_ICONS[a] ?? "•"} {a}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2 flex-shrink-0 items-center">
+                <button onClick={() => delRoom(room.name)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
+                  🗑 Delete
+                </button>
+                <button onClick={() => { setSelectedRoom(room); setEditName(room.name); setEditCapacity(room.capacity); setEditStatus(room.status); setEditAmenities(room.Amenities) }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">
+                  ✏️ Edit
+                </button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
