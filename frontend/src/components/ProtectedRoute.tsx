@@ -11,11 +11,11 @@ import { getCurrentUser } from "../api/authApi";
         const [loading, setLoading] = useState(true);
         useEffect(() => {
             const fetchUser =  async() => {
-                try{
+                try{                    
                     await getCurrentUser();
                     setAuthenticated(true);
                 }
-                catch {
+                catch {                    
                     setAuthenticated(false);
                 } finally {
                     setLoading(false);
@@ -28,7 +28,7 @@ import { getCurrentUser } from "../api/authApi";
             return <div>Loading...</div>;
         }
     
-        if(!authenticated) {
+        if(!authenticated) {            
             return <Navigate to="/" replace/>
         }
 

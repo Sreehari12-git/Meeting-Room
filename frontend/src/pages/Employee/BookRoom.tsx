@@ -2,6 +2,16 @@ import { useEffect, useState } from "react"
 import { getRooms } from "../../api/roomApi";
 import { bookRoom } from "../../api/bookingApi";
 
+const AMENITY_ICONS: Record<string, string> = {
+  "Projector": "ti-device-projector",
+  "Whiteboard": "ti-writing",
+  "TV Screen": "ti-device-tv",
+  "Video Conferencing": "ti-video",
+  "Sound System": "ti-volume",
+  "Air Conditioning": "ti-wind",
+  "Microphone": "ti-microphone",
+}
+
 function BookRoom() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -67,153 +77,245 @@ function BookRoom() {
     fetchRooms();
   }, []);
 
+  const statusConfig: Record<string, { label: string; dot: string; text: string }> = {
+    AVAILABLE:   { label: "Available",   dot: "bg-green-600",  text: "text-green-700"  },
+    OCCUPIED:    { label: "Occupied",    dot: "bg-red-600",    text: "text-red-700"    },
+    MAINTANENCE: { label: "Maintenance", dot: "bg-amber-600",  text: "text-amber-700"  },
+  }
+
+  const labelClass = "flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5"
+  const inputClass = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white"
+
   return (
     <div className="min-h-screen bg-gray-50 px-8 py-10">
-      <div className="mb-8 border-b border-gray-200 pb-5">
-        <h1 className="text-2xl font-semibold text-gray-800">Meeting Rooms</h1>
-        <p className="text-sm text-gray-500 mt-1">Select a room to make a booking</p>
-      </div>
 
-      {loading && (
-        <div className="flex items-center gap-2 text-gray-500 text-sm py-10 justify-center">
-          <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
-          Loading rooms...
-        </div>
-      )}
-
-      {error && !loading && (
-        <div className="flex items-center justify-between bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-          <span>{error}</span>
-          <button onClick={fetchRooms} className="text-red-600 underline hover:text-red-800 ml-4">
-            Retry
-          </button>
-        </div>
-      )}
-
-      {!loading && !error && rooms.length === 0 && (
-        <div className="text-center py-20 text-gray-400">
-          <p className="text-3xl mb-3">🚪</p>
-          <p className="text-sm">No rooms available at the moment.</p>
-        </div>
-      )}
-
-      {!loading && !error && rooms.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-100 text-gray-500 uppercase text-xs tracking-wider">
-              <tr>
-                <th className="px-6 py-3">Room Name</th>
-                <th className="px-6 py-3">Capacity</th>
-                <th className="px-6 py-3">Amenities</th>
-                <th className="px-6 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {rooms.map((room) => (
-                <tr key={room.id} className={`transition-colors ${room.status === "AVAILABLE" ? "hover:bg-gray-50" : "opacity-50"}`}>
-                  <td className="px-6 py-4 font-medium text-gray-800">
-                    {room.name || "—"}
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">
-                    {room.capacity ? `${room.capacity} people` : "—"}
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">
-                    {room.Amenities && room.Amenities.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {room.Amenities.map((amenity: string, index: number) => (
-                          <span key={index} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-md">
-                            {amenity}
-                          </span>
-                        ))}
-                      </div>
-                    ) : "—"}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => openModal(room)}
-                      disabled={room.status !== "AVAILABLE"}
-                      className="px-4 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                    >
-                      Book
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
+      {/* Booking Modal */}
       {selectedRoom && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <div className="mb-5 border-b border-gray-100 pb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Book a Room</h2>
-              <p className="text-sm text-gray-500 mt-0.5">{selectedRoom.name}</p>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-7 w-full max-w-md">
+
+            {/* Modal header */}
+            <div className="flex items-start justify-between pb-4 border-b border-gray-100 mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <i className="ti ti-door text-blue-700 text-xl" aria-hidden="true" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-gray-800">Book a room</h2>
+                  <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                    <i className="ti ti-building text-gray-400" aria-hidden="true" />
+                    {selectedRoom.name}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedRoom(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50 transition"
+                aria-label="Close"
+              >
+                <i className="ti ti-x text-sm" aria-hidden="true" />
+              </button>
             </div>
 
-            <div className="flex gap-4 mb-5 text-xs text-gray-500">
-              <span>👥 {selectedRoom.capacity} people</span>
+            {/* Room meta strip */}
+            <div className="flex items-center gap-4 px-3 py-2.5 bg-gray-50 rounded-lg mb-5 text-xs text-gray-500">
+              <span className="flex items-center gap-1.5">
+                <i className="ti ti-users" aria-hidden="true" />
+                {selectedRoom.capacity} people
+              </span>
+              {selectedRoom.Amenities?.length > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <i className="ti ti-layout-grid" aria-hidden="true" />
+                  {selectedRoom.Amenities.slice(0, 3).join(", ")}
+                  {selectedRoom.Amenities.length > 3 && ` +${selectedRoom.Amenities.length - 3}`}
+                </span>
+              )}
             </div>
 
             <div className="mb-4">
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Date & Start Time
+              <label className={labelClass}>
+                <i className="ti ti-calendar" aria-hidden="true" />
+                Start date & time
               </label>
               <input
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 min={new Date().toISOString().slice(0, 16)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={inputClass}
               />
             </div>
 
             <div className="mb-5">
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Date & End Time
+              <label className={labelClass}>
+                <i className="ti ti-calendar-due" aria-hidden="true" />
+                End date & time
               </label>
               <input
                 type="datetime-local"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 min={startTime || new Date().toISOString().slice(0, 16)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={inputClass}
               />
             </div>
 
             {bookingError && (
-              <div className="mb-4 px-3 py-2 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg">
-                ⚠️ {bookingError}
+              <div className="mb-4 flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
+                <i className="ti ti-alert-circle text-sm flex-shrink-0" aria-hidden="true" />
+                {bookingError}
               </div>
             )}
 
             {bookingSuccess && (
-              <div className="mb-4 px-3 py-2 bg-green-50 border border-green-200 text-green-600 text-xs rounded-lg">
-                ✅ Room booked successfully! Closing...
+              <div className="mb-4 flex items-center gap-2 px-3 py-2.5 bg-green-50 border border-green-200 text-green-700 text-xs rounded-lg">
+                <i className="ti ti-circle-check text-sm flex-shrink-0" aria-hidden="true" />
+                Room booked successfully! Closing…
               </div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-4 border-t border-gray-100">
               <button
                 onClick={() => setSelectedRoom(null)}
-                className="flex-1 py-2 border border-gray-200 text-gray-600 text-sm rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-gray-200 text-gray-600 text-sm rounded-lg hover:bg-gray-50 transition-colors"
               >
+                <i className="ti ti-x text-xs" aria-hidden="true" />
                 Cancel
               </button>
               <button
                 onClick={handleBooking}
                 disabled={bookingLoading || bookingSuccess}
-                className="flex-1 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
-                {bookingLoading ? "Booking..." : "Confirm Booking"}
+                <i className="ti ti-calendar-check text-sm" aria-hidden="true" />
+                {bookingLoading ? "Booking…" : "Confirm booking"}
               </button>
             </div>
-
           </div>
         </div>
       )}
 
+      <div className="mb-7 pb-5 border-b border-gray-200">
+        <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <i className="ti ti-building-community text-gray-400 text-xl" aria-hidden="true" />
+          Meeting rooms
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">Select a room to make a booking</p>
+      </div>
+
+      {loading && (
+        <div className="flex items-center justify-center gap-2.5 text-gray-400 text-sm py-16">
+          <div className="w-4 h-4 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin" />
+          Loading rooms…
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="flex items-center justify-between bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+          <span className="flex items-center gap-2">
+            <i className="ti ti-alert-circle" aria-hidden="true" />
+            {error}
+          </span>
+          <button onClick={fetchRooms} className="text-red-700 underline hover:text-red-900 ml-4 font-medium">
+            Retry
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && rooms.length === 0 && (
+        <div className="text-center py-20">
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <i className="ti ti-door text-gray-400 text-xl" aria-hidden="true" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">No rooms available</p>
+          <p className="text-xs text-gray-400 mt-1">Check back later or contact your admin</p>
+        </div>
+      )}
+
+      {!loading && !error && rooms.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+          <table className="w-full text-sm text-left">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <span className="flex items-center gap-1.5">
+                    <i className="ti ti-door text-xs" aria-hidden="true" />Room
+                  </span>
+                </th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <span className="flex items-center gap-1.5">
+                    <i className="ti ti-users text-xs" aria-hidden="true" />Capacity
+                  </span>
+                </th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <span className="flex items-center gap-1.5">
+                    <i className="ti ti-layout-grid text-xs" aria-hidden="true" />Amenities
+                  </span>
+                </th>
+                <th className="px-5 py-3" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {rooms.map((room) => {
+                const sc = statusConfig[room.status] ?? { label: room.status, dot: "bg-gray-400", text: "text-gray-500" }
+                const available = room.status === "AVAILABLE"
+                return (
+                  <tr key={room.id} className={`transition-colors ${available ? "hover:bg-gray-50" : "opacity-50"}`}>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${available ? "bg-blue-50" : "bg-gray-100"}`}>
+                          <i className={`ti ti-door text-lg ${available ? "text-blue-700" : "text-gray-400"}`} aria-hidden="true" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-800 text-sm">{room.name || "—"}</p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+                            <span className={`text-xs ${sc.text}`}>{sc.label}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      {room.capacity ? (
+                        <span className="flex items-center gap-1.5 text-gray-500 text-sm">
+                          <i className="ti ti-users text-sm" aria-hidden="true" />
+                          {room.capacity} people
+                        </span>
+                      ) : "—"}
+                    </td>
+                    <td className="px-5 py-4">
+                      {room.Amenities && room.Amenities.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {room.Amenities.map((amenity: string, index: number) => (
+                            <span key={index} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-gray-50 text-gray-500 border border-gray-100">
+                              <i className={`ti ${AMENITY_ICONS[amenity] ?? "ti-star"} text-xs`} aria-hidden="true" />
+                              {amenity}
+                            </span>
+                          ))}
+                        </div>
+                      ) : "—"}
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <button
+                        onClick={() => openModal(room)}
+                        disabled={!available}
+                        className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                          available
+                            ? "bg-blue-600 text-white hover:bg-blue-700"
+                            : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                        }`}
+                      >
+                        <i className={`ti ${available ? "ti-calendar-plus" : "ti-ban"} text-xs`} aria-hidden="true" />
+                        {available ? "Book" : "Unavailable"}
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

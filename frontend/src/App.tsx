@@ -17,7 +17,6 @@ function App() {
       <Routes>
         <Route path='/' element={<Login/>}/>
         <Route element={<ProtectedRoute><AdminLayout/></ProtectedRoute>}>
-        <Route path='/adDashboard' element={<AdminDashboard/>}/>
           <Route path='/create-room' element={<AddRoom/>}/>
           <Route path='/create-user' element={<AddUser/>}/>
           <Route path='/check-availability' element={<Availability/>}/>
